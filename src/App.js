@@ -6,6 +6,7 @@ import {
   useRouteMatch,
   useHistory,
 } from "react-router-dom"
+import useField from './hooks'
 
 import './app.css'
 
@@ -48,7 +49,7 @@ const Anecdote = ({ anecdote }) => (
   <div>
     <h2>{anecdote.content}</h2>
     <div>has {anecdote.votes} votes</div>
-    <div>for more info see {anecdote.info}</div>
+    <div><a href={anecdote.info}>for more info see {anecdote.info}</a></div>
   </div>
 )
 
@@ -75,22 +76,29 @@ const Footer = () => (
 )
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState('')
-  const [author, setAuthor] = useState('')
-  const [info, setInfo] = useState('')
+  const content = useField('text')
+  const author = useField('author')
+  const info = useField('info')
+
   const history = useHistory()
 
   const handleSubmit = (e) => {
     e.preventDefault()
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0
     })
     history.push('/anecdotes/')
   }
 
+  const reset = (e) => {
+    e.preventDefault()
+    content.reset()
+    author.reset()
+    info.reset()
+  }
 
   return (
 
@@ -99,17 +107,18 @@ const CreateNew = (props) => {
       <form onSubmit={handleSubmit}>
         <div>
           content
-          <input name='content' value={content} onChange={(e) => setContent(e.target.value)} />
+          <input {...content} reset='' />
         </div>
         <div>
           author
-          <input name='author' value={author} onChange={(e) => setAuthor(e.target.value)} />
+          <input {...author} reset='' />
         </div>
         <div>
           url for more info
-          <input name='info' value={info} onChange={(e) => setInfo(e.target.value)} />
+          <input {...info} reset='' />
         </div>
-        <button>create</button>
+        <button type='submit'>create</button>
+        <button onClick={reset}>reset</button>
       </form>
     </div>
   )
@@ -145,19 +154,19 @@ const App = () => {
     }, 10000);
   }
 
-  const anecdoteById = (id) =>
-    anecdotes.find(a => a.id === id)
+  // const anecdoteById = (id) =>
+  //   anecdotes.find(a => a.id === id)
 
-  const vote = (id) => {
-    const anecdote = anecdoteById(id)
+  // const vote = (id) => {
+  //   const anecdote = anecdoteById(id)
 
-    const voted = {
-      ...anecdote,
-      votes: anecdote.votes + 1
-    }
+  //   const voted = {
+  //     ...anecdote,
+  //     votes: anecdote.votes + 1
+  //   }
 
-    setAnecdotes(anecdotes.map(a => a.id === id ? voted : a))
-  }
+  //   setAnecdotes(anecdotes.map(a => a.id === id ? voted : a))
+  // }
 
   const match = useRouteMatch('/anecdotes/:id')
   const anecdote = match
