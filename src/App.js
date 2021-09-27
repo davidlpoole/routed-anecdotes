@@ -6,42 +6,54 @@ import {
   useRouteMatch,
   useHistory,
 } from "react-router-dom"
-import useField from './hooks'
-
-import './app.css'
+import { Table, Form, Button, Alert, Navbar, Nav } from 'react-bootstrap'
 
 const Menu = () => {
   const padding = {
     paddingRight: 5
   }
   return (
-    <div>
-      <Link to='/anecdotes' style={padding}>anecdotes</Link>
-      <Link to='/create' style={padding}>create new</Link>
-      <Link to='/about' style={padding}>about</Link>
-    </div>
-  )
-}
+    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+      <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+      <Navbar.Collapse id="responsive-navbar-nav">
+        <Nav className="mr-auto">
+          <Nav.Link href='#' as='span'>
+            <Link to='/anecdotes' style={padding}>anecdotes</Link>
+          </Nav.Link>
 
-const Notification = ({ message }) => {
-  const show = { display: '' }
-  const hide = { display: 'none' }
-  return (
-    <div className='notification' style={message ? show : hide}>
-      A new anecdote '{message}' was created.
-    </div >
+          <Nav.Link href='#' as='span'>
+            <Link to='/create' style={padding}>create new</Link>
+          </Nav.Link>
+
+          <Nav.Link href='#' as='span'>
+            <Link to='/about' style={padding}>about</Link>
+          </Nav.Link>
+
+        </Nav>
+      </Navbar.Collapse>
+    </Navbar >
   )
 }
 
 const AnecdoteList = ({ anecdotes }) => (
   <div>
     <h2>Anecdotes</h2>
-    <ul>
-      {anecdotes.map(anecdote =>
-        <li key={anecdote.id} >
-          <Link to={`/anecdotes/${anecdote.id}`} >{anecdote.content}</Link>
-        </li>)}
-    </ul>
+    <Table striped>
+      <thead>
+        <td><b>Anecdote</b></td>
+        <td><b>Author</b></td>
+        <td><b>Votes</b></td>
+
+      </thead>
+      <tbody>
+        {anecdotes.map(anecdote =>
+          <tr key={anecdote.id} >
+            <td><Link to={`/anecdotes/${anecdote.id}`} >{anecdote.content}</Link></td>
+            <td>{anecdote.author}</td>
+            <td>{anecdote.votes} votes</td>
+          </tr>)}
+      </tbody>
+    </Table>
   </div>
 )
 
@@ -76,18 +88,18 @@ const Footer = () => (
 )
 
 const CreateNew = (props) => {
-  const content = useField('text')
-  const author = useField('author')
-  const info = useField('info')
+  const [content, setContent] = useState('')
+  const [author, setAuthor] = useState('')
+  const [info, setInfo] = useState('')
 
   const history = useHistory()
 
   const handleSubmit = (e) => {
     e.preventDefault()
     props.addNew({
-      content: content.value,
-      author: author.value,
-      info: info.value,
+      content: content,
+      author: author,
+      info: info,
       votes: 0
     })
     history.push('/anecdotes/')
@@ -105,20 +117,32 @@ const CreateNew = (props) => {
     <div>
       <h2>create a new anecdote</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          content
-          <input {...content} reset='' />
-        </div>
-        <div>
-          author
-          <input {...author} reset='' />
-        </div>
-        <div>
-          url for more info
-          <input {...info} reset='' />
-        </div>
-        <button type='submit'>create</button>
-        <button onClick={reset}>reset</button>
+        <Form.Group>
+          <Form.Label>content</Form.Label>
+          <Form.Control
+            type='text'
+            name='content'
+            value={content}
+            onChange={(e) => setContent(e.target.value)} />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>author</Form.Label>
+          <Form.Control
+            type='text'
+            name='author'
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)} />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>url for more info</Form.Label>
+          <Form.Control
+            type='text'
+            name='info'
+            value={info}
+            onChange={(e) => setInfo(e.target.value)} />
+        </Form.Group>
+        <Button variant='primary' type='submit'>create</Button>
+        <Button variant='danger' onClick={reset}>reset</Button>
       </form>
     </div>
   )
@@ -148,9 +172,9 @@ const App = () => {
   const addNew = (anecdote) => {
     anecdote.id = (Math.random() * 10000).toFixed(0)
     setAnecdotes(anecdotes.concat(anecdote))
-    setNotification(anecdote.content)
+    setNotification(`A new anecdote '${anecdote.content}' was created.`)
     setTimeout(() => {
-      setNotification('')
+      setNotification(null)
     }, 10000);
   }
 
@@ -174,11 +198,15 @@ const App = () => {
     : null
 
   return (
-    <div>
+    <div className="container">
       <h1>Software anecdotes</h1>
 
       <Menu />
-      <Notification message={notification} />
+      {(notification &&
+        <Alert variant="success">
+          {notification}
+        </Alert>
+      )}
       <Switch>
         <Route path='/anecdotes/:id'>
           <Anecdote anecdote={anecdote} />
